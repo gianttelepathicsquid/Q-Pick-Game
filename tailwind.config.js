@@ -1,14 +1,20 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  darkMode: ["class"],
   content: [
     './pages/**/*.{js,jsx}',
     './components/**/*.{js,jsx}',
     './app/**/*.{js,jsx}',
-    './src/**/*.{js,jsx}',
   ],
   theme: {
-    extend: {},
+    extend: {}
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [],
+  safelist: [
+    {
+      pattern: /bg-(.*)/,
+      pattern: /hover:bg-(.*)/,
+      pattern: /text-(.*)/,
+      pattern: /border-(.*)/
+    }
+  ]
 }
