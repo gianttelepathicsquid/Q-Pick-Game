@@ -1,6 +1,7 @@
+"use client"
+
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Trophy, Box, Timer } from 'lucide-react';
+import { Package, Box, Timer, Trophy } from 'lucide-react';
 
 const WarehouseGame = () => {
   const [score, setScore] = useState(0);
@@ -13,7 +14,14 @@ const WarehouseGame = () => {
   // Generate random storage locations
   const generateWarehouseGrid = () => {
     const items = ['Electronics', 'Clothing', 'Food', 'Books', 'Toys'];
-    const colors = ['bg-blue-500', 'bg-green-500', 'bg-yellow-500', 'bg-red-500', 'bg-purple-500'];
+    const colors = {
+      'Electronics': 'bg-[#33B1FF] hover:bg-[#2090DD]',
+      'Clothing': 'bg-[#2090DD] hover:bg-[#1070BB]',
+      'Food': 'bg-[#1070BB] hover:bg-[#005099]',
+      'Books': 'bg-[#005099] hover:bg-[#004077]',
+      'Toys': 'bg-[#004077] hover:bg-[#003055]'
+    };
+    
     const grid = [];
     
     for (let i = 0; i < 16; i++) {
@@ -21,7 +29,7 @@ const WarehouseGame = () => {
       grid.push({
         id: i,
         item: items[randomIndex],
-        color: colors[randomIndex],
+        color: colors[items[randomIndex]],
         isActive: false
       });
     }
@@ -80,68 +88,78 @@ const WarehouseGame = () => {
   }, [gameActive, timeLeft]);
 
   return (
-    <Card className="w-full max-w-2xl mx-auto">
-      <CardHeader>
-        <CardTitle className="text-2xl font-bold text-center">Quetico 3PL Warehouse Pick & Pack</CardTitle>
-        <p className="text-center text-lg font-semibold text-gray-600">Can you beat {targetScore} points in 60 seconds?</p>
-      </CardHeader>
-      <CardContent>
-        <div className="flex justify-between mb-4">
-          <div className="flex items-center">
-            <Trophy className="w-6 h-6 mr-2 text-yellow-500" />
-            <span className="text-xl">Score: {score}</span>
-          </div>
-          <div className="flex items-center">
-            <Timer className="w-6 h-6 mr-2 text-red-500" />
-            <span className="text-xl">Time: {timeLeft}s</span>
+    <div className="max-w-2xl mx-auto bg-[#0A1520] rounded-xl shadow-xl p-6">
+      {/* Header */}
+      <div className="text-center mb-8">
+        <h1 className="text-3xl font-bold text-white mb-4">
+          <span className="text-[#33B1FF]">Quetico</span> Pick & Pack
+        </h1>
+        <p className="text-[#33B1FF] text-lg">Can you beat {targetScore} points in 60 seconds?</p>
+      </div>
+
+      {/* Score and Timer */}
+      <div className="flex justify-between mb-4">
+        <div className="flex items-center">
+          <Trophy className="w-6 h-6 mr-2 text-[#33B1FF]" />
+          <span className="text-xl text-white">Score: {score}</span>
+        </div>
+        <div className="flex items-center">
+          <Timer className="w-6 h-6 mr-2 text-[#33B1FF]" />
+          <span className="text-xl text-white">Time: {timeLeft}s</span>
+        </div>
+      </div>
+
+      {/* Start Button */}
+      {!gameActive && (
+        <button
+          onClick={startGame}
+          className="w-full p-4 mb-4 text-white bg-[#33B1FF] rounded-lg hover:bg-[#2090DD] transition-colors duration-200 shadow-md hover:shadow-lg font-bold"
+        >
+          Start Game
+        </button>
+      )}
+
+      {/* Current Order */}
+      {gameActive && currentOrder && (
+        <div className="mb-4 p-4 bg-[#0A1520] rounded-lg border border-[#33B1FF]/20">
+          <div className="text-lg font-semibold text-[#33B1FF]">Current Order:</div>
+          <div className="flex items-center text-white">
+            <Box className="w-5 h-5 mr-2 text-[#33B1FF]" />
+            <span>Pick {currentOrder.quantity - currentOrder.collected} {currentOrder.item}</span>
           </div>
         </div>
+      )}
 
-        {!gameActive && (
+      {/* Game Grid */}
+      <div className="grid grid-cols-4 gap-2">
+        {warehouseGrid.map((cell) => (
           <button
-            onClick={startGame}
-            className="w-full p-4 mb-4 text-white bg-green-500 rounded-lg hover:bg-green-600"
+            key={cell.id}
+            onClick={() => handleCellClick(cell)}
+            className={`${cell.color} p-4 rounded-lg text-white font-bold h-24 
+              flex items-center justify-center transform hover:scale-105 
+              transition-all duration-200 ${!gameActive ? 'opacity-50 cursor-not-allowed' : ''}
+              shadow-md hover:shadow-lg`}
+            disabled={!gameActive}
           >
-            Start Game
+            {cell.item}
           </button>
-        )}
+        ))}
+      </div>
 
-        {gameActive && currentOrder && (
-          <div className="mb-4 p-4 bg-gray-100 rounded-lg">
-            <div className="text-lg font-semibold">Current Order:</div>
-            <div className="flex items-center">
-              <Box className="w-5 h-5 mr-2" />
-              <span>Pick {currentOrder.quantity - currentOrder.collected} {currentOrder.item}</span>
-            </div>
-          </div>
-        )}
-
-        <div className="grid grid-cols-4 gap-2">
-          {warehouseGrid.map((cell) => (
-            <button
-              key={cell.id}
-              onClick={() => handleCellClick(cell)}
-              className={`${cell.color} p-4 rounded-lg text-white font-semibold h-24 flex items-center justify-center transform hover:scale-105 transition-transform ${!gameActive ? 'opacity-50 cursor-not-allowed' : ''}`}
-              disabled={!gameActive}
-            >
-              {cell.item}
-            </button>
-          ))}
+      {/* Game Over */}
+      {!gameActive && score > 0 && (
+        <div className="mt-4 p-4 bg-[#0A1520] rounded-lg text-center border border-[#33B1FF]/20">
+          <div className="text-xl font-bold text-[#33B1FF]">Game Over!</div>
+          <div className="text-white">Final Score: {score}</div>
+          {score >= targetScore ? (
+            <div className="text-[#33B1FF] font-semibold mt-2">Congratulations! You beat the challenge! 🏆</div>
+          ) : (
+            <div className="text-[#33B1FF] font-semibold mt-2">Try again to beat {targetScore} points!</div>
+          )}
         </div>
-
-        {!gameActive && score > 0 && (
-          <div className="mt-4 p-4 bg-yellow-100 rounded-lg text-center">
-            <div className="text-xl font-bold">Game Over!</div>
-            <div>Final Score: {score}</div>
-            {score >= targetScore ? (
-              <div className="text-green-600 font-semibold mt-2">Congratulations! You beat the challenge! 🏆</div>
-            ) : (
-              <div className="text-blue-600 font-semibold mt-2">Try again to beat {targetScore} points!</div>
-            )}
-          </div>
-        )}
-      </CardContent>
-    </Card>
+      )}
+    </div>
   );
 };
 
